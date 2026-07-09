@@ -91,7 +91,7 @@ python simulate_erratum.py --preset quick --outdir results/quick
 Use this to generate the manuscript-style figure:
 
 ```bash
-python simulate_erratum_fig1.py --preset paper --outdir results/fig1
+python simulate_erratum.py --preset paper --outdir results/fig1
 ```
 
 The paper preset uses 10% burn-in:
@@ -129,7 +129,7 @@ The CSV file stores the simulated mean profit, profit loss, standard deviation, 
 To regenerate plots without rerunning simulations:
 
 ```bash
-python simulate_erratum_fig1.py --plot-only --csv results/fig1/erratum_fig1_results.csv --outdir results/fig1
+python simulate_erratum.py --plot-only --csv results/fig1/erratum_fig1_results.csv --outdir results/fig1
 ```
 
 ## Custom runs
@@ -137,7 +137,7 @@ python simulate_erratum_fig1.py --plot-only --csv results/fig1/erratum_fig1_resu
 You can override the preset settings. For example:
 
 ```bash
-python simulate_erratum_fig1.py \
+python simulate_erratum.py \
   --preset quick \
   --steps 1000000 \
   --reps 5 \
