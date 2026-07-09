@@ -1,55 +1,68 @@
 # Erratum Figure 1 Simulation
 
-This repository contains code to reproduce the numerical experiment in Figure 1 of the erratum for **“Dynamic Pricing and Matching for Two-Sided Queues.”**
+This repository contains code to reproduce the numerical experiment in Figure 1 of the erratum for **Dynamic Pricing and Matching for Two-Sided Queues**.
 
-The script compares:
+The script compares two matching policies:
 
 - **MW**: max-weight matching using all compatibility edges.
 - **MMW**: modified max-weight matching using only non-redundant edges.
 
-The simulation uses the corrected non-CRP example
+The simulation uses the corrected non-CRP example:
 
-\[
-E=\{(1,1),(1,2),(2,2)\}, \qquad E_r=\{(1,2)\},
-\]
+```text
+E   = {(1,1), (1,2), (2,2)}
+E_r = {(1,2)}
+```
 
-so that the modified max-weight policy uses only the diagonal edges \((1,1)\) and \((2,2)\). Ties under MW are broken in favor of the diagonal edges.
+Thus, the modified max-weight policy uses only the two diagonal edges:
+
+```text
+{(1,1), (2,2)}
+```
+
+For MW, ties are broken in favor of the diagonal edges.
 
 ## Model parameters
 
-The example uses:
+The example uses the following parameters.
 
-\[
-n=m=2, \qquad s=1, \qquad \tau^\eta_{\max}=0,
-\]
+| Parameter | Value |
+|---|---|
+| Number of server types | `n = 2` |
+| Number of customer types | `m = 2` |
+| Unit holding cost | `s = 1` |
+| Queue threshold | `tau_max_eta = 0` |
+| Two-price scale | `sigma_eta = eta^(2/3) * n^(-1/3)` |
 
-\[
-\sigma^\eta=\eta^{2/3}n^{-1/3},
-\]
+Inverse demand curves:
 
-with inverse demand curves
+```text
+F_1(lambda_1) = 5 - lambda_1
+F_2(lambda_2) = 4 - lambda_2
+```
 
-\[
-F_1(\lambda_1)=5-\lambda_1, \qquad F_2(\lambda_2)=4-\lambda_2,
-\]
+Inverse supply curves:
 
-and inverse supply curves
+```text
+G_1(mu_1) = 1.5 * mu_1
+G_2(mu_2) = mu_2
+```
 
-\[
-G_1(\mu_1)=1.5\mu_1, \qquad G_2(\mu_2)=\mu_2.
-\]
+For this corrected graph, the fluid optimum is:
 
-For this corrected graph, the fluid optimum is
+```text
+lambda_star = (1, 1)
+mu_star     = (1, 1)
+chi_11_star = 1
+chi_22_star = 1
+chi_12_star = 0
+```
 
-\[
-\lambda^*=\mu^*=\mathbf 1_2, \qquad \chi^*_{11}=\chi^*_{22}=1, \qquad \chi^*_{12}=0,
-\]
+The redundant edge is `(1,2)`, and the fluid objective value is:
 
-and the redundant edge is \((1,2)\). The fluid objective value is
-
-\[
-\gamma^*=4.5.
-\]
+```text
+gamma_star = 4.5
+```
 
 ## Requirements
 
@@ -81,13 +94,13 @@ Use this to generate the manuscript-style figure:
 python simulate_erratum_fig1.py --preset paper --outdir results/fig1
 ```
 
-The paper preset uses 10% burn-in, meaning
+The paper preset uses 10% burn-in:
 
-\[
-\text{burn-in steps}=0.10\times \text{measured steps}.
-\]
+```text
+burn-in steps = 0.10 * measured steps
+```
 
-The preset uses longer runs at \(\eta=10000\), especially for MMW, because the MMW chain mixes slowly at large \(\eta\).
+The preset uses longer runs at `eta = 10000`, especially for MMW, because the MMW chain mixes slowly at large eta.
 
 ## Output files
 
@@ -106,10 +119,10 @@ erratum_fig1_slopes.txt
 
 The combined figure `erratum_fig1.png` / `erratum_fig1.pdf` contains two panels:
 
-1. Profit loss versus \(\eta\).
-2. Log-log plot of profit loss versus \(\eta\), with fitted slopes.
+1. Profit loss versus eta.
+2. Log-log plot of profit loss versus eta, with fitted slopes.
 
-The CSV file stores the simulated mean profit, profit loss, standard deviation, standard error, number of measured steps, burn-in steps, number of replications, and elapsed runtime for every \((\eta,\text{policy})\) pair.
+The CSV file stores the simulated mean profit, profit loss, standard deviation, standard error, number of measured steps, burn-in steps, number of replications, and elapsed runtime for every `(eta, policy)` pair.
 
 ## Replotting from an existing CSV
 
@@ -147,5 +160,5 @@ Useful options:
 ## Reproducibility notes
 
 - The script uses a deterministic base seed by default.
-- The paper preset is intentionally long to reduce Monte Carlo noise at large \(\eta\).
+- The paper preset is intentionally long to reduce Monte Carlo noise at large eta.
 - The figure does not include the exact MMW diagnostic line; it only plots MW and MMW, matching the manuscript-style figure.
