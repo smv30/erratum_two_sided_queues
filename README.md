@@ -103,5 +103,4 @@ The two `.eps` filenames match those referenced by the erratum's LaTeX source.
 * Each configuration is run with `--seeds` independent seeds (default 3) and the mean is
   reported; `results.json` also stores the per-seed values and standard deviation. Runs
   are deterministic for a fixed number of steps and seeds.
-* `θ` and `φ` (the two-price rate-reduction constants) are not specified in the erratum;
-  they are set to 1. They affect only the constant, not the scaling exponents.
+* `θ` and `φ` (the two-price rate-reduction constants) are set to 1. They affect only the constant, not the scaling exponents.
