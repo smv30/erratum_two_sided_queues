@@ -161,4 +161,3 @@ Useful options:
 
 - The script uses a deterministic base seed by default.
 - The paper preset is intentionally long to reduce Monte Carlo noise at large eta.
-- The figure does not include the exact MMW diagnostic line; it only plots MW and MMW, matching the manuscript-style figure.
