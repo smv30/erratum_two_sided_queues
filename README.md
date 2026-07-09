@@ -83,7 +83,7 @@ pip install -r requirements.txt
 Use this to check that the script runs:
 
 ```bash
-python simulate_erratum_fig1.py --preset quick --outdir results/quick
+python simulate_erratum.py --preset quick --outdir results/quick
 ```
 
 ### Paper-quality run
