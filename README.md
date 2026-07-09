@@ -48,7 +48,7 @@ G_1(mu_1) = 1.5 * mu_1
 G_2(mu_2) = mu_2
 ```
 
-For this corrected graph, the fluid optimum is:
+For this graph, the fluid optimum is:
 
 ```text
 lambda_star = (1, 1)
