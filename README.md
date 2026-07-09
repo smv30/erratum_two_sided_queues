@@ -1,163 +1,107 @@
-# Erratum Figure 1 Simulation
+# Two-Sided Queue Erratum — Numerical Simulations
 
-This repository contains code to reproduce the numerical experiment in Figure 1 of the erratum for **Dynamic Pricing and Matching for Two-Sided Queues**.
+Reproduces **Figure 1** of the erratum to
 
-The script compares two matching policies:
+> S. M. Varma, P. Bumpensanti, S. T. Maguluri, H. Wang.
+> *Dynamic Pricing and Matching for Two-Sided Queues.*
+> Operations Research 71(1):83–100, 2023. ([arXiv:1911.02213](https://arxiv.org/abs/1911.02213))
 
-- **MW**: max-weight matching using all compatibility edges.
-- **MMW**: modified max-weight matching using only non-redundant edges.
+The experiment compares the **profit loss** of the two-price pricing policy combined with
 
-The simulation uses the corrected non-CRP example:
+* the **max-weight (MW)** matching policy, and
+* the **modified max-weight (MMW)** matching policy
 
-```text
-E   = {(1,1), (1,2), (2,2)}
-E_r = {(1,2)}
-```
+on a 2×2 two-sided queue whose compatibility graph does **not** satisfy the CRP
+condition. The point of the erratum is that on such graphs the original Theorem 2
+may fail under MW but continues to hold under MMW: the profit loss scales as
+Θ(√η) for MW versus Θ(η^{1/3}) for MMW.
 
-Thus, the modified max-weight policy uses only the two diagonal edges:
+## Results
 
-```text
-{(1,1), (2,2)}
-```
+Simulated profit loss `L^η`, averaged over 3 independent seeds (mean ± std;
+100M uniformized slots per seed, 15M burn-in):
 
-For MW, ties are broken in favor of the diagonal edges.
+| η      |            MW |          MMW |
+|-------:|--------------:|-------------:|
+| 10     |   7.84 ± 0.01 |  7.16 ± 0.02 |
+| 100    |  23.29 ± 0.06 | 16.79 ± 0.02 |
+| 500    |  51.44 ± 0.24 | 29.41 ± 0.27 |
+| 1000   |  73.87 ± 0.81 | 36.81 ± 1.11 |
+| 2000   | 105.69 ± 2.10 | 47.47 ± 2.56 |
+| 5000   | 172.45 ± 6.27 | 65.21 ± 6.01 |
+| 10000  | 262.49 ± 12.3 | 76.87 ± 9.68 |
 
-## Model parameters
+Least-squares slopes of `log L^η` vs `log η` (on the seed-averaged means):
 
-The example uses the following parameters.
+| policy | fitted slope | paper | theory |
+|--------|:-----------:|:-----:|:------:|
+| MW     | **0.51**    | 0.51  | 1/2    |
+| MMW    | **0.35**    | 0.37  | 1/3    |
 
-| Parameter | Value |
-|---|---|
-| Number of server types | `n = 2` |
-| Number of customer types | `m = 2` |
-| Unit holding cost | `s = 1` |
-| Queue threshold | `tau_max_eta = 0` |
-| Two-price scale | `sigma_eta = eta^(2/3) * n^(-1/3)` |
+![profit loss](mw_vs_mmw.png)
 
-Inverse demand curves:
+## Model
 
-```text
-F_1(lambda_1) = 5 - lambda_1
-F_2(lambda_2) = 4 - lambda_2
-```
-
-Inverse supply curves:
-
-```text
-G_1(mu_1) = 1.5 * mu_1
-G_2(mu_2) = mu_2
-```
-
-For this graph, the fluid optimum is:
-
-```text
-lambda_star = (1, 1)
-mu_star     = (1, 1)
-chi_11_star = 1
-chi_22_star = 1
-chi_12_star = 0
-```
-
-The redundant edge is `(1,2)`, and the fluid objective value is:
-
-```text
-gamma_star = 4.5
-```
-
-## Requirements
-
-Use Python 3.10 or newer. Install dependencies with:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
-pip install -r requirements.txt
-```
-
-`numba` is optional in principle, but strongly recommended. Without it, the long paper-quality simulations will be slow.
+* Continuous-time MDP simulated via **uniformization** (constant `c = 4η`): in each
+  discrete slot there is at most one arrival — a type-`j` customer with probability
+  `λ_j(q)/c`, a type-`i` server with probability `μ_i(q)/c`, otherwise idle.
+* Compatibility graph `E = {(1,1),(1,2),(2,2)}` (edges written `(server i, customer j)`):
+  server 1 serves customers 1 and 2, server 2 serves only customer 2.
+* Demand curves `F₁(λ)=5−λ`, `F₂(λ)=4−λ`; supply curves `G₁(μ)=1.5μ`, `G₂(μ)=μ`.
+  These are designed so each diagonal link is marginally balanced
+  (`MR₁=MC₁=3`, `MR₂=MC₂=2`). The redundant edge `(1,2)` joins the expensive server 1
+  (`MC=3`) to the low-value customer 2 (`MR=2`), so `χ*₁₂=0`, `E_r={(1,2)}`.
+* Fluid solution: `λ*=μ*=(1,1)`, `χ*` diagonal — the unique fluid optimum (value 4.5),
+  confirmed by `verify_fluid()`.
+* **Two-price policy** (τ_max = 0, σ = η^{2/3} n^{-1/3}, θ = φ = 1): the arrival rate
+  is `ηλ*_j` while the corresponding queue is empty and `ηλ*_j − θ_j σ` once it is
+  positive (symmetrically for servers).
+* **Profit loss** (paper Definition 4):
+  `L^η = η·π* − E[revenue rate] + s·E[Σ q]`, with holding cost `s = 1` and
+  `π* = ⟨F(λ*),λ*⟩ − ⟨G(μ*),μ*⟩ = 4.5`. Because the pricing rates are a deterministic
+  function of the (random) queue state, the per-slot revenue reduction relative to
+  `η·π*` is accumulated directly, which avoids catastrophic cancellation and keeps the
+  Monte-Carlo variance low.
 
 ## Usage
 
-### Quick smoke test
-
-Use this to check that the script runs:
-
 ```bash
-python simulate_erratum.py --preset quick --outdir results/quick
+pip install -r requirements.txt
+
+# full run: 3 seeds averaged per configuration (~2 min with numba)
+# writes results.json (mean, std, per-seed) and the three figures
+python simulate_erratum.py
+
+# change the number of seeds averaged (default 3)
+python simulate_erratum.py --seeds 5
+
+# fast smoke test (slopes are noisier)
+python simulate_erratum.py --quick
+
+# re-draw the figures from a previously saved results.json (no simulation)
+python simulate_erratum.py --plot-only
+
+# custom accuracy / output location
+python simulate_erratum.py --steps 200000000 --burn 30000000 --out-dir figures
 ```
 
-### Paper-quality run
+### Outputs
 
-Use this to generate the manuscript-style figure:
+| file                          | description                                   |
+|-------------------------------|-----------------------------------------------|
+| `mw_vs_mmw.eps`               | linear panel (profit loss vs η)               |
+| `log_log_mw_vs_mmw_eta.eps`   | log-log panel with fitted slopes              |
+| `mw_vs_mmw.png`               | combined two-panel preview                     |
+| `results.json`                | mean / std / per-seed losses (for `--plot-only`) |
 
-```bash
-python simulate_erratum.py --preset paper --outdir results/fig1
-```
+The two `.eps` filenames match those referenced by the erratum's LaTeX source.
 
-The paper preset uses 10% burn-in:
+## Notes
 
-```text
-burn-in steps = 0.10 * measured steps
-```
-
-The preset uses longer runs at `eta = 10000`, especially for MMW, because the MMW chain mixes slowly at large eta.
-
-## Output files
-
-The script writes the following files to the output directory:
-
-```text
-erratum_fig1.png
-erratum_fig1.pdf
-erratum_fig1_loss_vs_eta.png
-erratum_fig1_loss_vs_eta.pdf
-erratum_fig1_loglog.png
-erratum_fig1_loglog.pdf
-erratum_fig1_results.csv
-erratum_fig1_slopes.txt
-```
-
-The combined figure `erratum_fig1.png` / `erratum_fig1.pdf` contains two panels:
-
-1. Profit loss versus eta.
-2. Log-log plot of profit loss versus eta, with fitted slopes.
-
-The CSV file stores the simulated mean profit, profit loss, standard deviation, standard error, number of measured steps, burn-in steps, number of replications, and elapsed runtime for every `(eta, policy)` pair.
-
-## Replotting from an existing CSV
-
-To regenerate plots without rerunning simulations:
-
-```bash
-python simulate_erratum.py --plot-only --csv results/fig1/erratum_fig1_results.csv --outdir results/fig1
-```
-
-## Custom runs
-
-You can override the preset settings. For example:
-
-```bash
-python simulate_erratum.py \
-  --preset quick \
-  --steps 1000000 \
-  --reps 5 \
-  --burn-frac 0.10 \
-  --outdir results/custom
-```
-
-Useful options:
-
-```text
---steps                 measured steps for all eta values except eta=10000 override
---reps                  replications for all eta values except eta=10000 override
---burn-frac             burn-in fraction relative to measured steps
---eta10000-steps        measured steps for eta=10000
---eta10000-reps-mw      MW replications for eta=10000
---eta10000-reps-mmw     MMW replications for eta=10000
---seed                  base random seed
-```
-
-## Reproducibility notes
-
-- The script uses a deterministic base seed by default.
-- The paper preset is intentionally long to reduce Monte Carlo noise at large eta.
+* [`numba`](https://numba.pydata.org/) JIT-compiles the inner simulation loop; without
+  it the code still runs (pure-Python fallback) but is ~50× slower.
+* Each configuration is run with `--seeds` independent seeds (default 3) and the mean is
+  reported; `results.json` also stores the per-seed values and standard deviation. Runs
+  are deterministic for a fixed number of steps and seeds.
+* `θ` and `φ` (the two-price rate-reduction constants) are not specified in the erratum;
+  they are set to 1. They affect only the constant, not the scaling exponents.
