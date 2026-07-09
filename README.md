@@ -33,10 +33,10 @@ Simulated profit loss `L^η`, averaged over 3 independent seeds (mean ± std;
 
 Least-squares slopes of `log L^η` vs `log η` (on the seed-averaged means):
 
-| policy | fitted slope | paper | theory |
-|--------|:-----------:|:-----:|:------:|
-| MW     | **0.51**    | 0.51  | 1/2    |
-| MMW    | **0.35**    | 0.37  | 1/3    |
+| policy | fitted slope | theory |
+|--------|:-----------:|:------:|
+| MW     | **0.51**     | 1/2    |
+| MMW    | **0.35**     | 1/3    |
 
 ![profit loss](mw_vs_mmw.png)
 
